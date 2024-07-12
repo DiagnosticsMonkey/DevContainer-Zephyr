@@ -9,16 +9,23 @@
 
 	"containerEnv": { "ZEPHYR_BASE": "${containerWorkspaceFolder}/zephyr" },
 
-    "settings": {
-		"terminal.integrated.profiles.linux": {
-			"bash": {
-				"path": "bash"
-			},
-		},
-		"terminal.integrated.defaultProfile.linux": "bash"
-	},
-	"extensions": [
-		"ms-vscode.cpptools",
-		"ms-vscode.cmake-tools"
-	]
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            "settings": {
+                // core
+                "terminal.integrated.defaultProfile.linux": "bash",
+            },
+            "extensions": [
+                // core
+                "ms-vscode.cmake-tools",
+                "ms-azuretools.vscode-docker",
+                // zephyr
+                "circuitdojo.zephyr-tools",
+                // editing
+                "stkb.rewrap",
+                "wayou.vscode-todo-highlight"
+            ]
+        }
+    } 
 }
