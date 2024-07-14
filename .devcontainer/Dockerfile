@@ -1,23 +1,40 @@
-FROM ghcr.io/zephyrproject-rtos/ci-base:main
-## Setup a user with sudo support
-USER root
+FROM ghcr.io/zephyrproject-rtos/ci:main
 
-RUN apt update
-RUN apt install -y gdb 
+ARG WORKDIR 
+ARG TARGET
+ARG TOOLCHAIN
 
-ARG USERNAME=dev
-ARG USER_UID=1001
-ARG USER_GID=$USER_UID
+ARG ZEPHYR_VERSION
+ARG ZSDK_VERSION
 
-# Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    #
-    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+# user's home directory.
+USER user
 
-# [Optional] Set the default user. Omit if you want to keep the default as root.
-USER $USERNAME
+RUN sudo apt update 
+RUN sudo apt upgrade -y
+
+RUN sudo -E -- bash -c ' \
+	/opt/toolchains/zephyr-sdk-${ZSDK_VERSION}/setup.sh -c && \
+	chown -R user:user /home/user/.cmake \
+	'
+
+WORKDIR /${WORKDIR}
+
+RUN west init
+RUN west update
+RUN python3 -m pip install -r zephyr/scripts/requirements.txt
+
+# Set the locale
+ENV PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+ENV OVMF_FD_PATH=/usr/share/ovmf/OVMF.fd
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV XDG_CACHE_HOME=/${WORKDIR}/.cache
+ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+ENV ZEPHYR_SDK_INSTALL_DIR=/${WORKDIR}/zephyr-sdk
+ENV ZEPHYR_BASE=/${WORKDIR}/zephyr
+ENV PATH="${ZEPHYR_BASE}/scripts:${PATH}"
+
+RUN source ${ZEPHYR_BASE}/zephyr-env.sh
+
