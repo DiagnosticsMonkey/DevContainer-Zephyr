@@ -37,4 +37,3 @@ ENV ZEPHYR_BASE=/${WORKDIR}/zephyr
 ENV PATH="${ZEPHYR_BASE}/scripts:${PATH}"
 
 RUN source ${ZEPHYR_BASE}/zephyr-env.sh
-
